@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Add Rush</title>
+  <style>
+    :root {
+      --ink: #24213b;
+      --muted: #77738d;
+      --purple: #7657f6;
+      --pink: #ff6eae;
+      --yellow: #ffd75e;
+      --paper: #fffdf8;
+      --line: #ece8f5;
+      --shadow: 0 12px 35px #32236a16;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 5% 0%, #fff0b8 0, transparent 26rem),
+        radial-gradient(circle at 100% 20%, #f0e9ff 0, transparent 30rem),
+        #f7f5ff;
+      font: 16px/1.45 system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    button { font: inherit; cursor: pointer; }
+    .wrap { max-width: 1080px; margin: auto; padding: 18px; }
+    header, .nav, .topline, .actions, .score-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    header { padding: 10px 0 18px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 950; letter-spacing: -.5px; }
+    .brand-mark { font-size: 30px; }
+    .party {
+      background: white; border: 1px solid var(--line); border-radius: 999px;
+      padding: 8px 13px; font-size: 13px; font-weight: 800;
+    }
+    .nav { justify-content: flex-start; overflow-x: auto; padding: 4px 0 18px; }
+    .nav button {
+      border: 0; background: transparent; padding: 9px 14px; border-radius: 999px;
+      color: var(--muted); font-weight: 800; white-space: nowrap;
+    }
+    .nav button.active { background: var(--ink); color: white; }
+    .hero {
+      background: linear-gradient(130deg, #7657f6, #9b64f5 58%, #ff76b5);
+      color: white; border-radius: 26px; padding: 25px; box-shadow: var(--shadow);
+      position: relative; overflow: hidden;
+    }
+    .hero:after { content: "✨"; font-size: 100px; position: absolute; right: 24px; top: 24px; opacity: .25; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; font-weight: 900; opacity: .8; }
+    h1 { margin: 7px 0 4px; font-size: clamp(29px, 6vw, 46px); line-height: 1.05; letter-spacing: -1.5px; }
+    .hero p { margin: 8px 0 0; max-width: 560px; opacity: .9; }
+    .grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; margin-top: 16px; }
+    .card {
+      background: var(--paper); border: 1px solid #eeeaf6; border-radius: 22px;
+      padding: 20px; box-shadow: var(--shadow);
+    }
+    .card h2 { margin: 0 0 5px; font-size: 19px; }
+    .sub { margin: 0 0 15px; color: var(--muted); font-size: 13px; }
+    .mode-list { display: grid; gap: 10px; }
+    .mode {
+      display: flex; align-items: center; gap: 12px; padding: 13px;
+      border: 1px solid var(--line); border-radius: 16px; background: white;
+      text-align: left; color: var(--ink); width: 100%;
+    }
+    .mode.selected { border: 2px solid var(--purple); background: #f7f4ff; }
+    .mode-icon { font-size: 26px; }
+    .mode strong { display: block; font-size: 13px; }
+    .mode small { display: block; color: var(--muted); margin-top: 2px; }
+    .mode .soon { margin-left: auto; color: var(--muted); font-size: 10px; font-weight: 900; }
+    .play {
+      width: 100%; margin-top: 13px; border: 0; border-radius: 14px; padding: 14px;
+      color: white; font-weight: 950; letter-spacing: .5px; text-transform: uppercase;
+      background: var(--ink); transition: transform .15s, opacity .15s;
+    }
+    .play:hover, .add-btn:hover { transform: translateY(-2px); }
+    .play:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .lobby { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+    .player {
+      min-width: 0; border: 1px solid var(--line); background: white;
+      border-radius: 15px; padding: 10px 5px; text-align: center; color: var(--ink);
+    }
+    .player .face { display: block; font-size: 27px; }
+    .player .name { display: block; font-size: 11px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; }
+    .player:hover { border-color: var(--pink); }
+    .trip-card {
+      grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr auto;
+      align-items: center; gap: 15px; background: #fff8df;
+    }
+    .trip-face { font-size: 58px; }
+    .trip-card h2 { margin: 0; }
+    .trip-card p { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+    .level { color: #885e00; background: #ffe59a; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; white-space: nowrap; }
+    .actions { margin-top: 14px; }
+    .add-btn {
+      flex: 1; background: var(--purple); color: white; border: 0; border-radius: 14px;
+      padding: 13px; font-weight: 900; transition: transform .15s;
+    }
+    .reset-btn { background: white; border: 1px solid var(--line); color: var(--ink); border-radius: 14px; padding: 13px; font-weight: 800; }
+    .game-panel { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .stat { border-radius: 15px; background: #f6f3ff; padding: 12px; text-align: center; }
+    .stat b { display: block; font-size: 23px; }
+    .stat span { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .progress { height: 8px; background: #eeeaf6; border-radius: 9px; overflow: hidden; margin-top: 13px; }
+    .progress div { height: 100%; width: 100%; background: linear-gradient(90deg, var(--pink), var(--yellow)); transition: width .25s; }
+    .toast { min-height: 22px; color: var(--purple); font-weight: 800; font-size: 13px; margin-top: 10px; }
+    .leaderboard { list-style: none; margin: 0; padding: 0; }
+    .leaderboard li { padding: 10px 0; border-bottom: 1px solid var(--line); display:flex; justify-content:space-between; gap:10px; font-weight: 750; }
+    .leaderboard li:last-child { border: 0; }
+    .note { color: var(--muted); font-size: 12px; margin-top: 14px; }
+    footer { padding: 20px 4px; text-align: center; color: var(--muted); font-size: 11px; }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      .trip-card { grid-column: auto; }
+      .hero { padding: 22px; }
+      .hero:after { right: 10px; top: 38px; font-size: 70px; }
+      .party { font-size: 11px; }
+    }
+    @media (max-width: 390px) {
+      .lobby { grid-template-columns: repeat(3, 1fr); }
+      .trip-card { grid-template-columns: auto 1fr; }
+      .level { grid-column: 2; justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><span class="brand-mark">⚡</span><span>QUICK ADD RUSH</span></div>
+      <div class="party">PARTY <span id="partyCount">9</span>/16</div>
+    </header>
+
+    <nav class="nav" aria-label="Main navigation">
+      <button class="active" data-section="lobby">LOBBY</button>
+      <button data-section="trip">TRIP KID</button>
+      <button data-section="locker">LOCKER</button>
+      <button data-section="leaderboard">LEADERBOARD</button>
+    </nav>
+
+    <section class="hero">
+      <div class="eyebrow">Game night starts here</div>
+      <h1>QUICK ADD RUSH</h1>
+      <p>30 seconds. Add as many random mojis as you can. Every add powers up Trip Kid. How high can your squad score?</p>
+    </section>
+
+    <main class="grid">
+      <section class="card">
+        <h2>🎮 Pick a mode</h2>
+        <p class="sub">Choose your chaos. Quick Add Rush is ready to play.</p>
+        <div class="mode-list">
+          <button class="mode selected" data-mode="rush">
+            <span class="mode-icon">⏱️</span><span><strong>QUICK ADD RUSH</strong><small>30 seconds. Add as many mojis as you can.</small></span>
+          </button>
+          <button class="mode" data-mode="coach">
+            <span class="mode-icon">🥊</span><span><strong>THE COACH HEAT TERROR</strong><small>Trip Kid takes on a player from the lobby.</small></span><span class="soon">SOON</span>
+          </button>
+          <button class="mode" data-mode="dew">
+            <span class="mode-icon">🥤</span><span><strong>DEW HEATERS</strong><small>Tap the player in blue. Let the chaos begin.</small></span><span class="soon">SOON</span>
+          </button>
+        </div>
+        <button class="play" id="playBtn">Play Quick Add Rush</button>
+        <div class="game-panel">
+          <div class="stat"><b id="timer">30</b><span>Seconds</span></div>
+          <div class="stat"><b id="score">0</b><span>This round</span></div>
+          <div class="stat"><b id="totalAdds">0</b><span>Trip adds</span></div>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="actions">
+          <button class="add-btn" id="addBtn">＋ Add someone</button>
+          <button class="reset-btn" id="resetBtn">Reset Trip</button>
+        </div>
+        <div class="toast" id="toast" role="status">Press PLAY when your squad is ready.</div>
+      </section>
+
+      <section class="card">
+        <div class="topline"><h2>👾 Lobby</h2><span class="sub" style="margin:0">Tap a player to edit</span></div>
+        <p class="sub">Simulated players fill the party while it’s quiet.</p>
+        <div class="lobby" id="lobby"></div>
+        <p class="note">Tip: tap any player to rename them or change their moji.</p>
+      </section>
+
+      <section class="card trip-card" id="tripCard">
+        <div class="trip-face" id="tripFace">😎</div>
+        <div>
+          <h2 id="tripName">Trip Kid: Rizz Evolution</h2>
+          <p>Every add levels Trip up. Tap Trip’s name to customize.</p>
+        </div>
+        <span class="level" id="level">LEVEL 1</span>
+      </section>
+
+      <section class="card" id="leaderboardCard">
+        <h2>🏆 Top players</h2>
+        <p class="sub">Best round scores on this device</p>
+        <ol class="leaderboard" id="leaderboard"></ol>
+      </section>
+      <section class="card" id="lockerCard">
+        <h2>🧸 Locker</h2>
+        <p class="sub">Your current look</p>
+        <div style="font-size:44px" id="lockerFace">😎</div>
+        <button class="reset-btn" id="customizeBtn">Customize Trip</button>
+      </section>
+    </main>
+    <footer>Made for friendly chaos • No account needed</footer>
+  </div>
+
+  <script>
+    const faces = ["😎","🤠","🥸","👽","🤖","🐸","🦊","🐼","🦄","👻","🧢","😈","🥶","🤩"];
+    const randomNames = ["Trip Kid","Rizz Wizard","Lil Chaos","Coach Heat","Dew Dealer","Snack Boss","Moji Master","Big W"];
+    const defaultPlayers = [
+      {name:"Trip Kid", face:"😎"}, {name:"Rizz Wizard", face:"🤠"},
+      {name:"Lil Chaos", face:"🐸"}, {name:"Coach Heat", face:"🥸"},
+      {name:"Dew Dealer", face:"🥶"}, {name:"Snack Boss", face:"🦊"},
+      {name:"Moji Master", face:"👽"}, {name:"Big W", face:"🤩"},
+      {name:"You", face:"🧢"}
+    ];
+    const saved = JSON.parse(localStorage.getItem("qar-save") || "{}");
+    let players = saved.players || defaultPlayers;
+    let trip = saved.trip || {name:"Trip Kid: Rizz Evolution", face:"😎", adds:0};
+    let best = saved.best || [];
+    let score = 0, timeLeft = 30, timerId = null, playing = false;
+
+    const $ = id => document.getElementById(id);
+    const save = () => localStorage.setItem("qar-save", JSON.stringify({players, trip, best}));
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    function renderLobby() {
+      $("lobby").innerHTML = "";
+      players.forEach((p, i) => {
+        const button = document.createElement("button");
+        button.className = "player";
+        button.innerHTML = `<span class="face">${p.face}</span><span class="name"></span>`;
+        button.querySelector(".name").textContent = p.name;
+        button.title = "Tap to rename or change moji";
+        button.onclick = () => editPlayer(i);
+        $("lobby").appendChild(button);
+      });
+      $("partyCount").textContent = players.length;
+    }
+    function renderTrip() {
+      $("tripName").textContent = trip.name;
+      $("tripFace").textContent = trip.face;
+      $("lockerFace").textContent = trip.face;
+      $("totalAdds").textContent = trip.adds;
+      $("level").textContent = "LEVEL " + (Math.floor(trip.adds / 5) + 1);
+    }
+    function renderBoard() {
+      $("leaderboard").innerHTML = "";
+      const rows = [...best].sort((a,b) => b.score - a.score).slice(0,5);
+      if (!rows.length) rows.push({name:"No scores yet — set the record!", score:"—"});
+      rows.forEach((row, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span>${i < 3 ? ["🥇","🥈","🥉"][i] : "⭐"} <span class="board-name"></span></span><b></b>`;
+        li.querySelector(".board-name").textContent = row.name;
+        li.querySelector("b").textContent = row.score;
+        $("leaderboard").appendChild(li);
+      });
+    }
+    function editPlayer(i) {
+      const p = players[i];
+      const name = prompt("Rename this player:", p.name);
+      if (name === null) return;
+      if (name.trim()) p.name = name.trim().slice(0, 18);
+      const face = prompt("Pick a moji: " + faces.join(" "), p.face);
+      if (face && faces.includes(face.trim())) p.face = face.trim();
+      renderLobby(); save();
+    }
+    function addSomeone() {
+      if (!playing) {
+        $("toast").textContent = "Press PLAY to start a 30-second round!";
+        return;
+      }
+      score++;
+      trip.adds++;
+      const newFace = pick(faces);
+      const newName = pick(randomNames);
+      if (players.length < 16) players.push({name:newName, face:newFace});
+      else {
+        const idx = Math.floor(Math.random() * players.length);
+        players[idx] = {name:newName, face:newFace};
+      }
+      $("score").textContent = score;
+      renderTrip(); renderLobby(); save();
+      $("toast").textContent = `${newFace} ${newName} joined! Trip leveled up.`;
+    }
+    function finishRound() {
+      playing = false;
+      clearInterval(timerId);
+      $("playBtn").disabled = false;
+      $("playBtn").textContent = "Play Again";
+      $("addBtn").textContent = "＋ Add someone";
+      best.push({name: players.find(p => p.name === "You")?.name || "You", score});
+      best.sort((a,b) => b.score - a.score);
+      best = best.slice(0, 10);
+      save(); renderBoard();
+      $("toast").textContent = `Time! You added ${score} ${score === 1 ? "moji" : "mojis"} — run it back?`;
+    }
+    function startRound() {
+      if (playing) return;
+      playing = true; score = 0; timeLeft = 30;
+      $("score").textContent = "0";
+      $("timer").textContent = "30";
+      $("progressBar").style.width = "100%";
+      $("playBtn").disabled = true;
+      $("playBtn").textContent = "Round in progress…";
+      $("toast").textContent = "Go go go! Tap “Add someone” as fast as you can.";
+      timerId = setInterval(() => {
+        timeLeft--;
+        $("timer").textContent = timeLeft;
+        $("progressBar").style.width = (timeLeft / 30 * 100) + "%";
+        if (timeLeft <= 0) finishRound();
+      }, 1000);
+    }
+
+    $("playBtn").onclick = startRound;
+    $("addBtn").onclick = addSomeone;
+    $("resetBtn").onclick = () => {
+      if (confirm("Reset Trip’s add count and level?")) {
+        trip.adds = 0; renderTrip(); save();
+        $("toast").textContent = "Trip is back to level 1. Fresh start!";
+      }
+    };
+    $("customizeBtn").onclick = () => {
+      const name = prompt("Give Trip a new name:", trip.name);
+      if (name === null) return;
+      if (name.trim()) trip.name = name.trim().slice(0, 26);
+      const face = prompt("Pick Trip’s moji: " + faces.join(" "), trip.face);
+      if (face && faces.includes(face.trim())) trip.face = face.trim();
+      renderTrip(); save();
+    };
+    $("tripFace").onclick = $("tripName").onclick = $("customizeBtn").onclick;
+
+    document.querySelectorAll(".mode").forEach(button => {
+      button.onclick = () => {
+        if (button.dataset.mode !== "rush") {
+          $("toast").textContent = "That mode is coming soon. Quick Add Rush is ready!";
+          return;
+        }
+        document.querySelectorAll(".mode").forEach(b => b.classList.remove("selected"));
+        button.classList.add("selected");
+      };
+    });
+    document.querySelectorAll(".nav button").forEach(button => {
+      button.onclick = () => {
+        document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+        const targets = {
+          lobby: document.querySelector(".grid"),
+          trip: $("tripCard"),
+          locker: $("lockerCard"),
+          leaderboard: $("leaderboardCard")
+        };
+        targets[button.dataset.section].scrollIntoView({behavior:"smooth", block:"center"});
+      };
+    });
+
+    renderLobby(); renderTrip(); renderBoard();
+  </script>
+</body>
+</html>
